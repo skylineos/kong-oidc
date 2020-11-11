@@ -31,6 +31,7 @@ function M.get_options(config, ngx)
     introspection_expiry_claim = config.introspection_expiry_claim,
     introspection_cache_ignore = config.introspection_cache_ignore,
     introspection_interval = config.introspection_interval,
+    refresh_session_interval = config.refresh_session_interval,
     bearer_only = config.bearer_only,
     realm = config.realm,
     redirect_uri = config.redirect_uri,

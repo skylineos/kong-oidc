@@ -16,6 +16,7 @@ return {
           { introspection_expiry_claim = { type = "string", required = false } },
           { introspection_cache_ignore = { type = "boolean", required = false } },
           { introspection_interval = { type = "number", required = false } },
+          { refresh_session_interval = { type = "number", required = false }},
           { timeout = { type = "number", required = false } },
           { bearer_only = { type = "string", required = true, default = "no" } },
           { realm = { type = "string", required = true, default = "kong" } },
