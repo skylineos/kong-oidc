@@ -43,7 +43,7 @@ function handle(oidcConfig, oidcSessionConfig)
     -- if response, then introspect successful
     if response then
       local access_token = utils.get_bearer_access_token_from_header(oidcConfig)
-      local userinfo, err = get_userinfo(oidcConfig, access_token)
+      local userinfo, err = get_userinfo(oidcConfig, access_token, response.id_token)
 
       -- @todo: how can we distinguish between access_token and id_token?
       -- @see: https://developer.okta.com/docs/reference/api/oidc/#introspect
@@ -68,7 +68,7 @@ function handle(oidcConfig, oidcSessionConfig)
 
     -- @todo: prevent 2nd call during authorization code flow
     if response and response.access_token then
-      response.user = get_userinfo(oidcConfig, response.access_token)
+      response.user = get_userinfo(oidcConfig, response.access_token, response.id_token)
     end
   end
 
@@ -168,7 +168,7 @@ function introspect(oidcConfig)
   return nil
 end
 
-function get_userinfo(oidcConfig, access_token)
+function get_userinfo(oidcConfig, access_token, id_token)
   -- todo: should we use session instead?
   -- todo: add tests to verify cache hit
   local userinfo = utils.cache_get("userinfo", access_token)
@@ -202,9 +202,9 @@ function get_userinfo(oidcConfig, access_token)
   local expiry_claim = oidcConfig.introspection_expiry_claim or "exp"
   local introspection_interval = oidcConfig.introspection_interval or oidcConfig.userinfo_interval or 0
 
-  local decoded_access_token = openidc.jwt_verify(access_token, oidcConfig)
-  if not introspection_cache_ignore and decoded_access_token[expiry_claim] then
-    local ttl = decoded_access_token[expiry_claim]
+  -- NOTE: id_token is what is used in lua-resty-openidc to determine expiration NOT access token
+  if not introspection_cache_ignore and id_token and id_token[expiry_claim] then
+    local ttl = id_token[expiry_claim]
 
     if expiry_claim == "exp" then --https://tools.ietf.org/html/rfc7662#section-2.2
       ttl = ttl - ngx.time()
